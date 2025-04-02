@@ -1661,6 +1661,7 @@
 													readonly={true}
 													compact={true}
 													showLabels={true}
+													signature={chord.signature}
 												/>
 											</div>
 										{:else}
@@ -2068,7 +2069,14 @@
 
 			<!-- Always show the piano keyboard -->
 			<div class="piano-wrapper">
-				<Piano notes={activeNotes} on:notePress={handlePianoNotePress} />
+				<Piano
+					notes={activeNotes}
+					readonly={false}
+					compact={false}
+					showLabels={true}
+					signature={currentSignature}
+					on:notePress={handlePianoNotePress}
+				/>
 			</div>
 
 			<!-- Keyboard shortcuts info -->
