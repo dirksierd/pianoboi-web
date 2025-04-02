@@ -28,7 +28,40 @@
 						const name = (noteAny.name || noteAny._name || '').toLowerCase();
 						const accidental = noteAny.accidental || noteAny._accidental || '';
 						const octave = noteAny.octave || noteAny._octave;
-						return `${name}${accidental}${octave}`;
+
+						// Convert sharp to flat or vice versa based on key signature
+						let displayAccidental = accidental;
+						if (isFlatKey && accidental === '#') {
+							// Convert sharp to flat for flat keys
+							const sharpToFlatMap: Record<string, string> = {
+								'c#': 'db',
+								'd#': 'eb',
+								'f#': 'gb',
+								'g#': 'ab',
+								'a#': 'bb'
+							};
+							const noteWithSharp = name + accidental;
+							if (noteWithSharp in sharpToFlatMap) {
+								const flatNote = sharpToFlatMap[noteWithSharp];
+								return `${flatNote[0]}b${octave}`;
+							}
+						} else if (!isFlatKey && accidental === 'b') {
+							// Convert flat to sharp for sharp keys
+							const flatToSharpMap: Record<string, string> = {
+								db: 'c#',
+								eb: 'd#',
+								gb: 'f#',
+								ab: 'g#',
+								bb: 'a#'
+							};
+							const noteWithFlat = name + accidental;
+							if (noteWithFlat in flatToSharpMap) {
+								const sharpNote = flatToSharpMap[noteWithFlat];
+								return `${sharpNote[0]}#${octave}`;
+							}
+						}
+
+						return `${name}${displayAccidental}${octave}`;
 					} catch (err) {
 						console.error('Error processing note:', note, err);
 						return '';
