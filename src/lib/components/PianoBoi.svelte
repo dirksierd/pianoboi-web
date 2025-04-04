@@ -42,9 +42,21 @@
 		notes: any[]; // The notes in the chord
 		signature: Signature; // Key signature at the time of save
 		timestamp: number; // When it was saved
+		setId: string | null; // Reference to the set this chord belongs to, can be null
+	}
+
+	interface ChordSet {
+		id: string; // Unique identifier
+		name: string; // User-defined name for the set
+		timestamp: number; // When it was created
+		description?: string; // Optional description
 	}
 
 	let savedChords: SavedChord[] = [];
+	let chordSets: ChordSet[] = [];
+	let currentSetId: string | null = null; // Track which set is currently active
+	let isSetMenuOpen = false; // For set management dropdown
+	let newSetName = ''; // For creating new sets
 	let chordsContainerElement: HTMLDivElement;
 	let currentChordId: string | null = null; // Track where new chords will be inserted
 	let playingChordId: string | null = null; // Track which chord is currently being played
@@ -559,17 +571,25 @@
 		}
 	}
 
-	// Load saved chords from localStorage
+	// Load saved chords and sets from localStorage
 	function loadSavedChords() {
 		if (!browser) return;
 
 		try {
-			const savedData = localStorage.getItem('pianoboi-saved-chords');
-			console.log('Loading from localStorage:', savedData);
+			const savedChordsData = localStorage.getItem('pianoboi-saved-chords');
+			const savedSetsData = localStorage.getItem('pianoboi-chord-sets');
 
-			if (savedData) {
+			console.log('Loading chords from localStorage:', savedChordsData);
+			console.log('Loading sets from localStorage:', savedSetsData);
+
+			if (savedSetsData) {
+				chordSets = JSON.parse(savedSetsData);
+				console.log('Loaded chord sets:', chordSets);
+			}
+
+			if (savedChordsData) {
 				// Need to reconstruct saved chords with proper Signature object references
-				const parsed = JSON.parse(savedData);
+				const parsed = JSON.parse(savedChordsData);
 				savedChords = parsed.map((chord: any) => {
 					// Find the matching signature object by ID
 					const matchedSignature =
@@ -587,7 +607,8 @@
 										number: calculateNoteNumber(note._name, note._accidental || '', note._octave),
 										identifier: `${note._name}${note._accidental || ''}${note._octave}`,
 										attack: note._attack || 0.5,
-										release: note._release || 0.5
+										release: note._release || 0.5,
+										signature: matchedSignature
 									}
 								: { ...note };
 
@@ -596,13 +617,14 @@
 						return processedNote;
 					});
 
-					// Ensure all required fields are present
+					// Ensure all required fields are present and preserve setId if it exists
 					return {
 						...chord,
 						notes: processedNotes,
 						signature: matchedSignature,
 						id: chord.id || `chord-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-						timestamp: chord.timestamp || Date.now()
+						timestamp: chord.timestamp || Date.now(),
+						setId: chord.setId || null
 					};
 				});
 				console.log('Loaded saved chords:', savedChords);
@@ -611,19 +633,83 @@
 			console.error('Error loading saved chords:', error);
 			// Start fresh if there was an error
 			savedChords = [];
+			chordSets = [];
 		}
 	}
 
-	// Save chords to localStorage
+	// Save chords and sets to localStorage
 	function persistSavedChords() {
 		if (!browser) return;
 
 		try {
 			localStorage.setItem('pianoboi-saved-chords', JSON.stringify(savedChords));
+			localStorage.setItem('pianoboi-chord-sets', JSON.stringify(chordSets));
 			console.log('Saved chords to localStorage:', savedChords);
+			console.log('Saved sets to localStorage:', chordSets);
 		} catch (error) {
-			console.error('Error saving chords to localStorage:', error);
+			console.error('Error saving to localStorage:', error);
 		}
+	}
+
+	// Create a new chord set
+	function createChordSet() {
+		if (!newSetName.trim()) return;
+
+		const setId = `set-${Date.now()}`;
+		const newSet: ChordSet = {
+			id: setId,
+			name: newSetName.trim(),
+			timestamp: Date.now(),
+			description: ''
+		};
+
+		chordSets = [...chordSets, newSet];
+		currentSetId = setId; // Automatically select the new set
+		newSetName = ''; // Clear the input
+		isSetMenuOpen = false; // Close the menu
+
+		persistSavedChords();
+	}
+
+	// Delete a chord set
+	function deleteChordSet(setId: string) {
+		// Remove the set
+		chordSets = chordSets.filter((set) => set.id !== setId);
+
+		// Option 1: Also remove all chords in this set
+		// savedChords = savedChords.filter(chord => chord.setId !== setId);
+
+		// Option 2: Keep chords but remove their set association
+		savedChords = savedChords.map((chord) =>
+			chord.setId === setId ? { ...chord, setId: null } : chord
+		);
+
+		// If the deleted set was the current set, reset current set
+		if (currentSetId === setId) {
+			currentSetId = chordSets.length > 0 ? chordSets[0].id : null;
+		}
+
+		persistSavedChords();
+	}
+
+	// Assign a chord to the current set
+	function assignChordToCurrentSet(chordId: string) {
+		if (!currentSetId) return;
+
+		savedChords = savedChords.map((chord) =>
+			chord.id === chordId ? { ...chord, setId: currentSetId } : chord
+		);
+
+		persistSavedChords();
+	}
+
+	// Remove a chord from its set
+	function removeChordFromSet(chordId: string) {
+		savedChords = savedChords.map((chord) =>
+			chord.id === chordId ? { ...chord, setId: null } : chord
+		);
+
+		persistSavedChords();
 	}
 
 	// Function to save the current chord
@@ -668,7 +754,8 @@
 			id,
 			notes: processedNotes,
 			signature: currentSignature,
-			timestamp: Date.now()
+			timestamp: Date.now(),
+			setId: currentSetId // Assign to current set if one is selected
 		};
 
 		console.log('Creating new chord:', newChord);
@@ -1350,6 +1437,16 @@
 		const pitchClasses = extractPitchClasses(activeNotes);
 		currentChords = Chord.detect(pitchClasses);
 	}
+
+	// Get filtered chords based on current set selection
+	$: filteredChords = currentSetId
+		? savedChords.filter((chord) => chord.setId === currentSetId)
+		: savedChords;
+
+	// Get set name for display
+	$: currentSetName = currentSetId
+		? chordSets.find((set) => set.id === currentSetId)?.name || 'Unnamed Set'
+		: 'All Chords';
 </script>
 
 <!-- Main Layout with Sticky UI -->
@@ -1493,6 +1590,117 @@
 							</div>
 						{/if}
 					</div>
+
+					<!-- Chord Set Selector Dropdown -->
+					<div class="relative">
+						<button
+							class="flex items-center gap-1.5 rounded-lg border bg-white px-3 py-1.5 text-sm font-medium shadow hover:bg-gray-50"
+							on:click={() => (isSetMenuOpen = !isSetMenuOpen)}
+						>
+							<!-- Folder Icon -->
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								class="h-4 w-4 text-blue-600"
+								viewBox="0 0 20 20"
+								fill="currentColor"
+							>
+								<path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" />
+							</svg>
+							<span class="font-medium text-gray-700">Set:</span>
+							<span class="ml-1 text-blue-600">{currentSetName}</span>
+							<svg
+								class="ml-1 h-4 w-4"
+								fill="currentColor"
+								viewBox="0 0 20 20"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<path
+									fill-rule="evenodd"
+									d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+									clip-rule="evenodd"
+								></path>
+							</svg>
+						</button>
+
+						{#if isSetMenuOpen}
+							<div
+								class="absolute left-0 top-full z-30 mt-1 w-80 rounded-md border border-gray-200 bg-white p-2 shadow-lg"
+							>
+								<div class="mb-2 border-b pb-1 text-sm font-medium text-gray-700">Chord Sets</div>
+
+								<!-- Set List -->
+								<div class="mb-3 max-h-60 overflow-y-auto">
+									<button
+										class="mb-1 flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm hover:bg-blue-50"
+										class:bg-blue-100={currentSetId === null}
+										on:click={() => {
+											currentSetId = null;
+											isSetMenuOpen = false;
+										}}
+									>
+										<span class="font-medium">All Chords</span>
+										<span class="text-xs text-gray-500">{savedChords.length} chords</span>
+									</button>
+
+									{#each chordSets as set}
+										<div
+											class="flex w-full items-center justify-between rounded-md px-1 py-1 hover:bg-blue-50"
+											class:bg-blue-100={currentSetId === set.id}
+										>
+											<button
+												class="flex-1 px-2 py-1 text-left text-sm"
+												on:click={() => {
+													currentSetId = set.id;
+													isSetMenuOpen = false;
+												}}
+											>
+												<span class="font-medium">{set.name}</span>
+												<span class="ml-2 text-xs text-gray-500">
+													{savedChords.filter((c) => c.setId === set.id).length} chords
+												</span>
+											</button>
+											<button
+												class="ml-1 rounded p-1 text-red-400 hover:bg-red-50 hover:text-red-600"
+												on:click={() => deleteChordSet(set.id)}
+											>
+												<svg
+													xmlns="http://www.w3.org/2000/svg"
+													class="h-4 w-4"
+													viewBox="0 0 20 20"
+													fill="currentColor"
+												>
+													<path
+														fill-rule="evenodd"
+														d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+														clip-rule="evenodd"
+													/>
+												</svg>
+											</button>
+										</div>
+									{/each}
+								</div>
+
+								<!-- Create New Set Form -->
+								<div class="border-t pt-2">
+									<form on:submit|preventDefault={createChordSet} class="flex items-center">
+										<input
+											type="text"
+											bind:value={newSetName}
+											placeholder="New set name..."
+											class="flex-1 rounded-md border-gray-300 px-3 py-1.5 text-sm shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+										/>
+										<button
+											type="submit"
+											disabled={!newSetName.trim()}
+											class="ml-2 rounded-md bg-blue-500 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-blue-600 disabled:opacity-50"
+										>
+											Create
+										</button>
+									</form>
+								</div>
+							</div>
+						{/if}
+					</div>
 				</div>
 
 				<!-- Right-aligned MIDI Device Dropdown -->
@@ -1570,14 +1778,14 @@
 						</div>
 					{/if}
 				</div>
-			</div>
 
-			<!-- Error Message -->
-			{#if !midiEnabled}
-				<div class="mt-2 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-					<p>{midiError || 'WebMidi is not enabled. Please refresh to try again.'}</p>
-				</div>
-			{/if}
+				<!-- Error Message -->
+				{#if !midiEnabled}
+					<div class="mt-2 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+						<p>{midiError || 'WebMidi is not enabled. Please refresh to try again.'}</p>
+					</div>
+				{/if}
+			</div>
 		</div>
 	</header>
 
@@ -1592,23 +1800,30 @@
 				id="chord-container"
 			>
 				<!-- Increased padding to make room for both keyboard and sheet -->
-				{#if savedChords && savedChords.length > 0}
+				{#if filteredChords && filteredChords.length > 0}
 					<div class="space-y-4 p-4">
 						<div class="header-content flex items-center justify-between">
 							<h2 class="text-lg font-bold text-gray-800">
-								Chord Progression ({savedChords.length} chords)
+								{currentSetName} ({filteredChords.length}
+								{filteredChords.length === 1 ? 'chord' : 'chords'})
 							</h2>
 
 							<div class="flex gap-2">
 								<button
 									class="rounded bg-red-500 px-3 py-1 text-xs font-medium text-white hover:bg-red-600"
 									on:click={() => {
-										savedChords = [];
+										if (currentSetId) {
+											// Only clear chords in current set
+											savedChords = savedChords.filter((chord) => chord.setId !== currentSetId);
+										} else {
+											// Clear all chords
+											savedChords = [];
+										}
 										persistSavedChords();
 										currentChordId = null;
 									}}
 								>
-									Clear All
+									Clear {currentSetId ? 'Set' : 'All'}
 								</button>
 							</div>
 						</div>
@@ -1630,15 +1845,94 @@
 						</div>
 
 						<!-- Saved chords - showing the primary view based on view mode -->
-						{#each savedChords as chord, index}
+						{#each filteredChords as chord, index}
 							<div
 								id={chord.id}
 								class="chord-container relative rounded-lg border bg-white p-3 shadow-sm transition-all duration-300 hover:shadow"
 								class:bg-blue-50={playingChordId === chord.id}
 							>
 								<div class="mb-2 flex items-center justify-between text-xs text-gray-500">
-									<div>
-										Key: <span class="font-medium text-gray-700">{chord.signature.id}</span>
+									<div class="flex items-center gap-2">
+										<div>
+											Key: <span class="font-medium text-gray-700">{chord.signature.id}</span>
+										</div>
+
+										<!-- Set Assignment Control -->
+										{#if chord.setId && chord.setId === currentSetId}
+											<div class="flex items-center">
+												<span
+													class="ml-2 rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-700"
+												>
+													In Set: {chordSets.find((s) => s.id === chord.setId)?.name || 'Unknown'}
+												</span>
+												<button
+													class="ml-1 text-xs text-blue-400 hover:text-blue-600"
+													on:click={() => removeChordFromSet(chord.id)}
+													title="Remove from set"
+												>
+													<svg
+														xmlns="http://www.w3.org/2000/svg"
+														class="h-3 w-3"
+														viewBox="0 0 20 20"
+														fill="currentColor"
+													>
+														<path
+															fill-rule="evenodd"
+															d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+															clip-rule="evenodd"
+														/>
+													</svg>
+												</button>
+											</div>
+										{:else if chord.setId && chord.setId !== currentSetId}
+											<div class="flex items-center">
+												<span
+													class="ml-2 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600"
+												>
+													In Set: {chordSets.find((s) => s.id === chord.setId)?.name || 'Unknown'}
+												</span>
+												{#if currentSetId}
+													<button
+														class="ml-1 text-xs text-blue-400 hover:text-blue-600"
+														on:click={() => assignChordToCurrentSet(chord.id)}
+														title="Move to current set"
+													>
+														<svg
+															xmlns="http://www.w3.org/2000/svg"
+															class="h-3 w-3"
+															viewBox="0 0 20 20"
+															fill="currentColor"
+														>
+															<path
+																d="M8 5a1 1 0 100 2h5.586l-1.293 1.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L13.586 5H8z"
+															/>
+															<path
+																d="M12 15a1 1 0 100-2H6.414l1.293-1.293a1 1 0 10-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L6.414 15H12z"
+															/>
+														</svg>
+													</button>
+												{/if}
+											</div>
+										{:else if currentSetId}
+											<button
+												class="ml-2 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600 hover:bg-blue-100 hover:text-blue-700"
+												on:click={() => assignChordToCurrentSet(chord.id)}
+											>
+												<span class="flex items-center gap-1">
+													<svg
+														xmlns="http://www.w3.org/2000/svg"
+														class="h-3 w-3"
+														viewBox="0 0 20 20"
+														fill="currentColor"
+													>
+														<path
+															d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM14 11a1 1 0 011 1v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0v-1h-1a1 1 0 110-2h1v-1a1 1 0 011-1z"
+														/>
+													</svg>
+													Add to set
+												</span>
+											</button>
+										{/if}
 									</div>
 								</div>
 
