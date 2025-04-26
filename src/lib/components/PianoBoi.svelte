@@ -561,10 +561,10 @@
 <div class="flex h-screen flex-col">
 	<!-- Sticky top navigation -->
 	<header class="sticky top-0 z-30 bg-white shadow-md">
-		<div class="container mx-auto p-3">
+		<div class="container mx-auto p-2">
 			<div class="header-content flex items-center justify-between">
 				<!-- Title and left controls -->
-				<div class="header-content flex items-center gap-3">
+				<div class="header-content flex items-center gap-2">
 					<!-- View mode toggle -->
 					<ViewModeSwitcher {viewMode} on:change={(e) => (viewMode = e.detail.mode)} />
 
@@ -606,10 +606,10 @@
 			<!-- Scrollable saved chords -->
 			<div
 				bind:this={chordsContainerElement}
-				class="h-full overflow-y-auto pb-[280px]"
+				class="h-full overflow-y-auto pb-[240px]"
 				id="chord-container"
 			>
-				<!-- Increased padding to make room for both keyboard and sheet -->
+				<!-- Saved chords content -->
 				<SavedChordsList
 					chords={savedChords}
 					{chordSets}
@@ -653,26 +653,26 @@
 
 	<!-- Sticky player UI at the bottom of the screen - always shows both keyboard and sheet music -->
 	<div
-		class="sticky bottom-0 z-20 border-t bg-white pb-3 pt-2 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]"
+		class="sticky bottom-0 z-20 border-t bg-white pb-2 pt-1 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]"
 	>
 		<div class="container mx-auto px-4">
-			<div class="mb-3 flex items-center justify-between">
+			<div class="mb-2 flex items-center justify-between">
 				<div>
 					<!-- Save button -->
 					<button
-						class="flex items-center gap-1.5 rounded-lg bg-blue-500 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition-all duration-150 hover:bg-blue-600 hover:shadow-md active:scale-95 active:bg-blue-700"
+						class="flex items-center gap-1 rounded-lg bg-blue-500 px-2 py-1 text-xs font-medium text-white shadow-sm transition-all duration-150 hover:bg-blue-600 hover:shadow-md active:scale-95 active:bg-blue-700"
 						on:click={saveCurrentChord}
 						title="Save the current chord (Space)"
 					>
 						<i class="fas fa-save"></i>
-						<span class="ml-1.5">Save Chord</span>
-						<span class="ml-1 rounded bg-blue-600/80 px-1.5 py-0.5 text-xs font-medium">Space</span>
+						<span class="ml-1">Save Chord</span>
+						<span class="ml-1 rounded bg-blue-600/80 px-1 py-0.5 text-xs font-medium">Space</span>
 					</button>
 				</div>
 
 				<!-- Current insertion point indicator -->
 				{#if currentChordId}
-					<div class="flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs text-blue-700">
+					<div class="flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-700">
 						<span>
 							{#if currentChordId === 'top'}
 								Adding at beginning
@@ -681,7 +681,7 @@
 							{/if}
 						</span>
 						<button
-							class="ml-2 rounded-full bg-blue-100 p-1 text-blue-700 hover:bg-blue-200"
+							class="ml-1 rounded-full bg-blue-100 p-1 text-blue-700 hover:bg-blue-200"
 							on:click={() => setCurrentChord(null)}
 						>
 							<i class="fas fa-times text-xs"></i>
@@ -707,9 +707,9 @@
 			</div>
 
 			<!-- Sheet music display with chord reference table -->
-			<div class="mb-3 min-h-[80px] border-b pb-3">
+			<div class="mb-2 min-h-[70px] border-b pb-2">
 				<!-- Chord Detection & Reference Table in two columns on larger screens, stacked on smaller screens -->
-				<div class="flex flex-col gap-4 sm:flex-row">
+				<div class="flex flex-col gap-2 sm:flex-row">
 					<!-- Left: Chord Detection -->
 					<div class="flex-1">
 						<SheetMusic notes={activeNotes} signature={currentSignature} />
@@ -739,7 +739,7 @@
 			</div>
 
 			<!-- Keyboard shortcuts info -->
-			<div class="mt-3 border-t pt-2 text-center text-xs text-gray-500">
+			<div class="mt-1 border-t pt-1 text-center text-xs text-gray-500">
 				{#if samplesLoaded}
 					<p>
 						Keyboard shortcuts: <span class="mx-1 rounded bg-gray-200 px-1 py-0.5 font-mono"
@@ -751,8 +751,8 @@
 					</p>
 				{:else}
 					<div class="flex flex-col items-center">
-						<p class="mb-1">Loading piano samples: {loadingProgress}%</p>
-						<div class="h-2 w-full max-w-xs overflow-hidden rounded-full bg-gray-200">
+						<p class="mb-0.5">Loading piano samples: {loadingProgress}%</p>
+						<div class="h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-gray-200">
 							<div class="h-full rounded-full bg-blue-500" style="width: {loadingProgress}%"></div>
 						</div>
 					</div>

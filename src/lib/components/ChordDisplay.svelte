@@ -49,3 +49,26 @@
 		return majorChords.includes(chord) || minorChords.includes(chord);
 	}
 </script>
+
+<div class="rounded-lg border bg-white p-2 shadow-sm">
+	<div class="text-xs">
+		<div class="mb-1 flex items-center justify-between">
+			<h3 class="font-medium text-gray-700">Current Notes</h3>
+			{#if debug}
+				<span class="text-xs text-gray-500">{pitchClasses.join(', ')}</span>
+			{/if}
+		</div>
+		
+		{#if notes.length > 0}
+			<div class="mt-1 flex flex-wrap gap-1">
+				{#each pitchClasses as note}
+					<span class="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">
+						{note}
+					</span>
+				{/each}
+			</div>
+		{:else}
+			<p class="mt-1 text-xs text-gray-500">No notes detected. Play some notes to see them here.</p>
+		{/if}
+	</div>
+</div>

@@ -13,19 +13,19 @@
 	}
 </script>
 
-<div class="flex overflow-hidden rounded-lg border shadow">
+<div class="flex overflow-hidden rounded-md border shadow-sm">
 	<button
-		class="flex-1 px-3 py-1.5 font-medium transition-colors"
+		class="flex-1 px-2 py-1 text-sm font-medium transition-colors"
 		class:bg-blue-500={viewMode === 'keyboard'}
 		class:text-white={viewMode === 'keyboard'}
 		class:bg-white={viewMode !== 'keyboard'}
 		class:text-gray-700={viewMode !== 'keyboard'}
 		on:click={() => toggleViewMode('keyboard')}
 	>
-		<div class="flex items-center justify-center gap-1.5">
+		<div class="flex items-center justify-center gap-1">
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
-				class="h-4 w-4"
+				class="h-3.5 w-3.5"
 				viewBox="0 0 20 20"
 				fill="currentColor"
 			>
@@ -36,21 +36,21 @@
 					clip-rule="evenodd"
 				/>
 			</svg>
-			<span class="hidden sm:inline">Keyboard</span>
+			<span class="hidden sm:inline text-xs">Keyboard</span>
 		</div>
 	</button>
 	<button
-		class="flex-1 px-3 py-1.5 font-medium transition-colors"
+		class="flex-1 px-2 py-1 text-sm font-medium transition-colors"
 		class:bg-blue-500={viewMode === 'sheet'}
 		class:text-white={viewMode === 'sheet'}
 		class:bg-white={viewMode !== 'sheet'}
 		class:text-gray-700={viewMode !== 'sheet'}
 		on:click={() => toggleViewMode('sheet')}
 	>
-		<div class="flex items-center justify-center gap-1.5">
+		<div class="flex items-center justify-center gap-1">
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
-				class="h-4 w-4"
+				class="h-3.5 w-3.5"
 				viewBox="0 0 20 20"
 				fill="currentColor"
 			>
@@ -61,7 +61,7 @@
 				/>
 				<path d="M7 5h6v2H7V5zm0 4h6v2H7V9zm0 4h6v2H7v-2z" />
 			</svg>
-			<span class="hidden sm:inline">Sheet</span>
+			<span class="hidden sm:inline text-xs">Sheet</span>
 		</div>
 	</button>
 </div>

@@ -32,12 +32,12 @@
 
 <div class="relative">
 	<button
-		class="flex items-center gap-1.5 rounded-lg border bg-white px-3 py-1.5 text-sm font-medium shadow hover:bg-gray-50"
+		class="flex items-center gap-1 rounded-lg border bg-white px-2 py-1 text-xs font-medium shadow-sm hover:bg-gray-50"
 		on:click={toggleMenu}
 	>
 		<svg
 			xmlns="http://www.w3.org/2000/svg"
-			class="h-4 w-4 text-blue-600"
+			class="h-3.5 w-3.5 text-blue-600"
 			viewBox="0 0 20 20"
 			fill="currentColor"
 		>
@@ -49,7 +49,7 @@
 		</svg>
 		{selectedInput ? selectedInput.name : 'Select MIDI Device'}
 		<svg
-			class="ml-1 h-4 w-4"
+			class="ml-1 h-3.5 w-3.5"
 			fill="currentColor"
 			viewBox="0 0 20 20"
 			xmlns="http://www.w3.org/2000/svg"
@@ -65,12 +65,12 @@
 	<!-- Dropdown menu -->
 	{#if isMenuOpen}
 		<div
-			class="dropdown-menu absolute right-0 mt-2 w-56 rounded-md border border-gray-200 bg-white shadow-lg"
+			class="dropdown-menu absolute right-0 mt-1 w-52 rounded-md border border-gray-200 bg-white shadow-lg"
 			style="z-index: 9999;"
 		>
 			<div class="p-2">
-				<div class="mb-2 flex justify-between border-b pb-2">
-					<span class="font-medium text-gray-700">MIDI Devices</span>
+				<div class="mb-1 flex justify-between border-b pb-1">
+					<span class="text-xs font-medium text-gray-700">MIDI Devices</span>
 					<button
 						class="text-xs text-blue-600 hover:text-blue-800"
 						on:click={refreshMidiDevices}
@@ -81,12 +81,12 @@
 				</div>
 
 				{#if midiInputs.length === 0}
-					<div class="py-2 text-center text-sm text-gray-500">No MIDI devices found</div>
+					<div class="py-1 text-center text-xs text-gray-500">No MIDI devices found</div>
 				{:else}
-					<div class="max-h-40 overflow-y-auto py-1">
+					<div class="max-h-36 overflow-y-auto py-1">
 						{#each midiInputs as input}
 							<button
-								class="flex w-full items-center rounded px-3 py-2 text-left text-sm hover:bg-gray-100"
+								class="flex w-full items-center rounded px-2 py-1 text-left text-xs hover:bg-gray-100"
 								class:bg-blue-50={selectedInput === input}
 								class:font-medium={selectedInput === input}
 								class:text-blue-700={selectedInput === input}
@@ -103,7 +103,7 @@
 
 	<!-- Error Message -->
 	{#if !midiEnabled && midiError}
-		<div class="mt-2 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+		<div class="mt-1 rounded border border-red-200 bg-red-50 px-2 py-1 text-xs text-red-700">
 			<p>{midiError}</p>
 		</div>
 	{/if}

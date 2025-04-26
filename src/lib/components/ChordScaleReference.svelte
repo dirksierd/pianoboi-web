@@ -18,9 +18,9 @@
 	}
 </script>
 
-<div class="flex w-full flex-1 flex-col rounded-lg border bg-white p-3 shadow-sm">
-	<div class="mb-4 flex items-center justify-between border-b pb-2">
-		<h3 class="text-sm font-medium text-gray-700">
+<div class="flex w-full flex-1 flex-col rounded-lg border bg-white p-2 shadow-sm">
+	<div class="mb-2 flex items-center justify-between border-b pb-1">
+		<h3 class="text-xs font-medium text-gray-700">
 			Key: {signature.label}
 		</h3>
 
@@ -28,13 +28,13 @@
 		{#if hasInfoButton}
 			<div class="relative">
 				<button
-					class="ml-2 rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+					class="ml-2 rounded-full p-0.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
 					on:click={toggleInfo}
 					title="Show chord notation info"
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
-						class="h-4 w-4"
+						class="h-3.5 w-3.5"
 						viewBox="0 0 20 20"
 						fill="currentColor"
 					>
@@ -48,9 +48,9 @@
 
 				{#if isInfoOpen}
 					<div
-						class="absolute right-0 top-full z-40 mt-2 w-72 rounded-lg border border-gray-200 bg-white p-3 shadow-lg"
+						class="absolute right-0 top-full z-40 mt-1 w-64 rounded-lg border border-gray-200 bg-white p-2 shadow-lg"
 					>
-						<div class="space-y-2 text-xs text-gray-500">
+						<div class="space-y-1 text-xs text-gray-500">
 							<p>
 								<span class="font-medium">Major Scale:</span> The highlighted chords are the primary
 								chords:
@@ -84,12 +84,12 @@
 
 	<!-- Detected Chords Display -->
 	{#if notes && notes.length > 0 && detectedChords && detectedChords.length > 0}
-		<div class="mb-4">
-			<h4 class="mb-2 text-sm font-medium text-gray-700">Detected Chords</h4>
-			<div class="flex flex-wrap gap-2">
+		<div class="mb-2">
+			<h4 class="mb-1 text-xs font-medium text-gray-700">Detected Chords</h4>
+			<div class="flex flex-wrap gap-1">
 				{#each detectedChords as chord}
 					<span
-						class="rounded-full px-3 py-1 text-sm font-medium"
+						class="rounded-full px-2 py-0.5 text-xs font-medium"
 						class:bg-green-100={isInKey(chord, scaleChords)}
 						class:text-green-800={isInKey(chord, scaleChords)}
 						class:bg-blue-100={!isInKey(chord, scaleChords)}
@@ -97,7 +97,7 @@
 					>
 						{chord}
 						{#if isInKey(chord, scaleChords)}
-							<span class="ml-1 text-xs text-green-600">(in key)</span>
+							<span class="ml-1 text-[10px] text-green-600">(in key)</span>
 						{/if}
 					</span>
 				{/each}
@@ -106,31 +106,31 @@
 	{/if}
 
 	<div class="overflow-hidden rounded border">
-		<table class="w-full text-sm">
-			<thead class="bg-gray-50 text-xs font-medium text-gray-700">
+		<table class="w-full text-xs">
+			<thead class="bg-gray-50 text-[10px] font-medium text-gray-700">
 				<tr>
-					<th class="py-1 pl-2 text-left">Scale</th>
-					<th class="py-1 text-center">I</th>
-					<th class="py-1 text-center">II</th>
-					<th class="py-1 text-center">III</th>
-					<th class="py-1 text-center">IV</th>
-					<th class="py-1 text-center">V</th>
-					<th class="py-1 text-center">VI</th>
-					<th class="py-1 text-center">VII</th>
+					<th class="py-0.5 pl-1 text-left">Scale</th>
+					<th class="py-0.5 text-center">I</th>
+					<th class="py-0.5 text-center">II</th>
+					<th class="py-0.5 text-center">III</th>
+					<th class="py-0.5 text-center">IV</th>
+					<th class="py-0.5 text-center">V</th>
+					<th class="py-0.5 text-center">VI</th>
+					<th class="py-0.5 text-center">VII</th>
 				</tr>
 			</thead>
 			<tbody>
 				<tr class="border-t">
-					<td class="bg-blue-50 px-2 py-1 text-xs font-medium">Major</td>
+					<td class="bg-blue-50 px-1 py-0.5 text-[10px] font-medium">Major</td>
 					{#each scaleChords.major as chord, i}
 						<td
-							class="py-1 text-center text-xs"
+							class="py-0.5 text-center text-[10px]"
 							class:bg-blue-100={i === 0 || i === 3 || i === 4}
 							class:bg-green-200={matchingChords.majorMatches.includes(i)}
 							class:font-bold={matchingChords.majorMatches.includes(i)}
 						>
 							<div>{chord}</div>
-							<div class="mt-0.5 text-[10px] text-gray-500">
+							<div class="mt-0.5 text-[8px] text-gray-500">
 								{i === 0
 									? 'I'
 									: i === 1
@@ -149,16 +149,16 @@
 					{/each}
 				</tr>
 				<tr class="border-t">
-					<td class="bg-blue-50 px-2 py-1 text-xs font-medium">Minor</td>
+					<td class="bg-blue-50 px-1 py-0.5 text-[10px] font-medium">Minor</td>
 					{#each scaleChords.minor as chord, i}
 						<td
-							class="py-1 text-center text-xs"
+							class="py-0.5 text-center text-[10px]"
 							class:bg-blue-100={i === 0 || i === 3 || i === 4}
 							class:bg-green-200={matchingChords.minorMatches.includes(i)}
 							class:font-bold={matchingChords.minorMatches.includes(i)}
 						>
 							<div>{chord}</div>
-							<div class="mt-0.5 text-[10px] text-gray-500">
+							<div class="mt-0.5 text-[8px] text-gray-500">
 								{i === 0
 									? 'i'
 									: i === 1
