@@ -1,6 +1,6 @@
 <!-- Component for displaying and managing saved chords -->
 <script lang="ts">
-	import type { ChordSet, SavedChord } from '$lib/utils/chords';
+	import type { ChordSet, SavedChord, MatchingChords } from '$lib/utils/chords';
 	import { findMatchingChords, generateScaleChords } from '$lib/utils/chords';
 	import { createEventDispatcher } from 'svelte';
 	import ChordDisplay from './ChordDisplay.svelte';
@@ -225,19 +225,19 @@
 							</div>
 						{/if}
 					</div>
-
-					<!-- Play button - positioned at bottom right -->
-					<button
-						class="absolute bottom-2 right-2 flex items-center rounded-full bg-blue-500 px-2 py-1 text-white transition-colors hover:bg-blue-600"
-						class:animate-pulse={playingChordId === chord.id}
-						on:click={() => handlePlayChord(chord)}
-						aria-label="Play chord"
-						title="Play chord (or press 'P' to play latest chord)"
-					>
-						<i class="fas fa-play mr-1 text-xs"></i>
-						<span class="text-xs">Play</span>
-					</button>
 				</div>
+
+				<!-- Play button - positioned at bottom right -->
+				<button
+					class="absolute bottom-2 right-2 flex items-center rounded-full bg-blue-500 mx-1 my-1 px-2 py-1 text-white transition-colors hover:bg-blue-600"
+					class:animate-pulse={playingChordId === chord.id}
+					on:click={() => handlePlayChord(chord)}
+					aria-label="Play chord"
+					title="Play chord (or press 'P' to play latest chord)"
+				>
+					<i class="fas fa-play mr-1 text-xs"></i>
+					<span class="text-xs">Play</span>
+				</button>
 			</div>
 
 			<!-- Insertion marker after each chord -->
