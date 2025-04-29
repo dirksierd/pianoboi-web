@@ -168,7 +168,7 @@
 						class="white-key flex cursor-pointer items-end justify-center border border-gray-300 bg-white pb-2"
 						class:active={activeKeys.includes(`${note.toLowerCase()}${octave}`)}
 						class:h-32={!compact}
-						class:h-24={compact}
+						class:h-20={compact}
 						class:w-[1.8rem]={!compact}
 						class:w-[1.4rem]={compact}
 						on:mousedown={(e) => handleMouseDown(e, note, '', octave)}
@@ -194,7 +194,7 @@
 						class="black-key absolute top-0 z-10 cursor-pointer bg-gray-800 text-white"
 						class:active={activeKeys.includes(`${baseNote.toLowerCase()}${accidental}${octave}`)}
 						class:h-20={!compact}
-						class:h-14={compact}
+						class:h-12={compact}
 						style="left: calc({offset} * {compact ? '1.4rem' : '1.8rem'} + {compact
 							? '0.95rem'
 							: '1.25rem'}); width: {compact ? '0.9rem' : '1.1rem'};"
